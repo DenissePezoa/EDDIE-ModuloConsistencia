@@ -6,7 +6,7 @@ namespace InterfacesModuloConsistencia
 {
     public interface IPageMarker
     {
-        List<List<string>> GetPageMarker(string nombrePDF);
+        List<string> GetPageMarker(string nombrePDF);
         string GetName(); 
         string GetVersion();
     }

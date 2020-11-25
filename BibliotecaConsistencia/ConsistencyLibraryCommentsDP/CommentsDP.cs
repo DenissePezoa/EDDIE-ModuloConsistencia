@@ -5,7 +5,7 @@ using System.Drawing;
 using InterfacesModuloConsistencia;
 namespace ConsistencyLibraryCommentsDP
 {
-    public class CommentsDP : IComments
+    public class CommentsDP : ICommentsDP
     {
         
         public List<List<string>> GetComments(string namePDF)

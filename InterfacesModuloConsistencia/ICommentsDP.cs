@@ -4,7 +4,7 @@ using System.Text;
 
 namespace InterfacesModuloConsistencia
 {
-    public interface IComments
+    public interface ICommentsDP
     {
         string GetName();
         string GetVersion();

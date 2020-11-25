@@ -13,7 +13,7 @@ namespace ModuloConsistenciaDatos
     public class FiguresConsistencyDP
     {
 
-        public JObject SincronizarFiguras(Mat imagen, string nombrePDF)
+        public JObject SincronizarFiguras(string nombrePDF)
         {
             //List<string> figurasObtenidas = new List<string>();
             
@@ -39,9 +39,9 @@ namespace ModuloConsistenciaDatos
                 Console.WriteLine("cargo objeto  " + obj.ToString());
                 var result = type.GetMethod("ObtenerFiguras");
                 Console.WriteLine("cargo metodo " + result.Name);
-                object[] parametros = new object[] { imagen, nombrePDF };
+                object[] parametros = new object[] { nombrePDF };
                 Console.WriteLine("parametrosss  " + parametros[0].ToString());
-                var respuesta = result.Invoke(obj, new object[] { imagen, nombrePDF });
+                var respuesta = result.Invoke(obj, new object[] {  nombrePDF });
                 figurasObtenidas = (JObject)respuesta;
                 return figurasObtenidas;
                 // }

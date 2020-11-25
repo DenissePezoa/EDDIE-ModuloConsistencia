@@ -12,7 +12,7 @@ namespace ModuloConsistenciaDatos
     public class ConsistenciaFigurasFD
     {
 
-        public JObject buscarFiguras(Mat imagen, string nombrePDF)
+        public int buscarFiguras(Mat imagen, string nombrePDF)
         {
             //List<string> figurasObtenidas = new List<string>();
            
@@ -22,7 +22,7 @@ namespace ModuloConsistenciaDatos
             
             JObject figurasObtenidas= new JObject();
             var assembly = Assembly.LoadFile(extensionsPath);
-            
+            int resultado = -1;
             
 
             try
@@ -41,8 +41,8 @@ namespace ModuloConsistenciaDatos
                     object[] parametros = new object[] {imagen, nombrePDF };
                     Console.WriteLine("parametrosss  "+parametros[0].ToString());
                     var respuesta = result.Invoke(obj, new object[] { imagen, nombrePDF });
-                    figurasObtenidas = (JObject)respuesta;
-                    return figurasObtenidas;
+                    resultado = (int)respuesta;
+                    return resultado;
                // }
                 
                 
@@ -79,7 +79,7 @@ namespace ModuloConsistenciaDatos
                  }*/
             }
             //
-            return figurasObtenidas;
+            return resultado;
 
         }
     }

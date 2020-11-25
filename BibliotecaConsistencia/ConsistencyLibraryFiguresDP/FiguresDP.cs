@@ -11,11 +11,12 @@ using Newtonsoft.Json.Linq;
 
 namespace ConsistencyLibraryFiguresDP
 {
-    public class FiguresDP : IFiguras
+    public class FiguresDP : IFiguresDP
     {
         public List<System.Drawing.Rectangle> rectList = new List<System.Drawing.Rectangle>();
         public List<CircleF> circleList = new List<CircleF>();
         public List<Ellipse> ellipseList = new List<Ellipse>();
+        
         public string GetName()
         {
             string name = "FiguresDP";
@@ -28,12 +29,9 @@ namespace ConsistencyLibraryFiguresDP
             return version;
         }
 
-        public void GuardarFiguras(string nombrePDF)
-        {
-            throw new NotImplementedException();
-        }
+    
 
-        public JObject ObtenerFiguras(Mat imagen, string nombrePDF)
+        public JObject ObtenerFiguras(string nombrePDF)
         {
             string oldFile = nombrePDF;
             //string newFile = "C:\\Users\\Denisse\\Desktop\\EDDIE-Augmented-Reading-master\\AugmentedReadingApp\\bin\\x86\\Debug\\temporal.pdf"
@@ -192,7 +190,7 @@ namespace ConsistencyLibraryFiguresDP
             }
 
 
-            auxRes = auxRes + " \"circulos\": [";
+            auxRes = auxRes + " ,\"circulos\": [";
             //Agregar circulos y elipses
             j = 0;
             if (ellipseList.Count == 0)
@@ -245,5 +243,12 @@ namespace ConsistencyLibraryFiguresDP
 
 
         }
+
+
+        public void GuardarFiguras(string nombrePDF)
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }
