@@ -22,7 +22,7 @@ using System.Linq;
 
 namespace ConsistencyLibraryFiguresPD
 {
-    public class FiguresPD : IFiguras
+    public class FiguresPD : IFiguresPD
     {
         private Mat _frame;
         //public string nombrePDF;
@@ -33,9 +33,10 @@ namespace ConsistencyLibraryFiguresPD
         public List<Ellipse> ellipseList = new List<Ellipse>();
 
         //Mat _frame
-        public JObject ObtenerFiguras(Mat _frame, string nombrePdf)
+        public int ObtenerFiguras(Mat _frame, string nombrePdf)
         {
             Console.WriteLine("Entro en Metodo obtener figuras del dll");
+            int resultado=0;
             //resultados.Clear();
 
             //if (_frame.IsEmpty)
@@ -242,102 +243,20 @@ namespace ConsistencyLibraryFiguresPD
                 //pictureBox2.Image = resultadoFinal.Bitmap;
                 //button2.Enabled = true;
             }
-            string resultado = "{\"figuras\" : {\"rectangulos\" : [{";
-            string auxRes = "";
-            int j = 0;
-            if (rect.Count == 0)
+
+            if (rect.Count != 0 ||  ellipseList.Count !=0)
             {
-                auxRes = auxRes + "}],";
+                resultado = 1;
+                Console.WriteLine("Rect: "+rect.Count+" y elipse: "+ellipseList.Count);
+                Console.WriteLine("llamare a guardar figuras nombrepdf " + nombrePdf);
+                GuardarFiguras(nombrePdf);
             }
             else
             {
-                foreach (var item in rect)
-                {
-
-                    if (rect.Count - 1 == j)
-                    {
-                        auxRes = auxRes + "\"rect" + j + "\":{";
-                        auxRes = auxRes + "\"puntoX\":";
-                        auxRes = auxRes + "\"" + item.X + "\",";
-                        auxRes = auxRes + "\"puntoY\":";
-                        auxRes = auxRes + "\"" + item.Y + "\",";
-                        auxRes = auxRes + "\"width\":";
-                        auxRes = auxRes + "\"" + item.Width + "\",";
-                        auxRes = auxRes + "\"height\":";
-                        auxRes = auxRes + "\"" + item.Height + "\"}}],";
-                    }
-                    else
-                    {
-                        auxRes = auxRes + "\"rect" + j + "\":{";
-                        auxRes = auxRes + "\"puntoX\":";
-                        auxRes = auxRes + "\"" + item.X + "\",";
-                        auxRes = auxRes + "\"puntoY\":";
-                        auxRes = auxRes + "\"" + item.Y + "\",";
-                        auxRes = auxRes + "\"width\":";
-                        auxRes = auxRes + "\"" + item.Width + "\",";
-                        auxRes = auxRes + "\"height\":";
-                        auxRes = auxRes + "\"" + item.Height + "\"},";
-                    }
-
-                    j = j + 1;
-                }
-            }
-
-
-
-            auxRes = auxRes + "\"ellipses\" :[{";
-            //Elipses
-            if (ellipseList.Count == 0)
-            {
-                auxRes = auxRes + "}]";
-            }
-            else
-            {
-                j = 0;
-                foreach (var item in ellipseList)
-                {
-                    var elipseAux = item.RotatedRect.MinAreaRect();
-                    if (ellipseList.Count - 1 == j)
-                    {
-                        auxRes = auxRes + "\"elipse" + j + "\":{";
-                        auxRes = auxRes + "\"puntoX\":";
-                        auxRes = auxRes + "\"" + elipseAux.X + "\",";
-                        auxRes = auxRes + "\"puntoY\":";
-                        auxRes = auxRes + "\"" + elipseAux.Y + "\",";
-                        auxRes = auxRes + "\"width\":";
-                        auxRes = auxRes + "\"" + elipseAux.Width + "\",";
-                        auxRes = auxRes + "\"height\":";
-                        auxRes = auxRes + "\"" + elipseAux.Height + "\"}}]";
-                    }
-                    else
-                    {
-                        auxRes = auxRes + "\"elipse" + j + "\":{";
-                        auxRes = auxRes + "\"puntoX\":";
-                        auxRes = auxRes + "\"" + elipseAux.X + "\",";
-                        auxRes = auxRes + "\"puntoY\":";
-                        auxRes = auxRes + "\"" + elipseAux.Y + "\",";
-                        auxRes = auxRes + "\"width\":";
-                        auxRes = auxRes + "\"" + elipseAux.Width + "\",";
-                        auxRes = auxRes + "\"height\":";
-                        auxRes = auxRes + "\"" + elipseAux.Height + "\"},";
-                    }
-
-                    j = j + 1;
-                }
+                resultado = 0;
             }
             
-            auxRes = auxRes + "}}";
-            resultado = resultado + auxRes;
-            Console.WriteLine("Cantidad de rectangulos " + rect.Count);
-            Console.WriteLine("Cantidad de circulos " + circleList.Count);
-            Console.WriteLine("Cantidad de elipses " + ellipseList.Count);
-            Console.WriteLine("esto es la string auxres " + auxRes);
-            Console.WriteLine("esto es la string resultado "+ resultado);
-            //string jsonData = @"{ 'FirstName':'Jignesh', 'LastName':'Trivedi' }";
-            var final = JObject.Parse(resultado);
-            Console.WriteLine("llamare a guardar figuras nombrepdf " + nombrePdf);
-            GuardarFiguras(nombrePdf);
-            return  final;
+            return  resultado;
 
             
 
@@ -354,79 +273,14 @@ namespace ConsistencyLibraryFiguresPD
             string newFile = "C:\\Users\\Denisse\\Desktop\\EDDIE-Augmented-Reading-master\\AugmentedReadingApp\\bin\\x86\\Debug\\temporal.pdf";
 
 
-            //PdfReader reader = new PdfReader(oldFile);
-            //Console.WriteLine("abrio archivo");
-            //PdfStamper stamper = new PdfStamper(reader, new FileStream(newFile, FileMode.Append));
-
-
-            //PdfContentByte contentunder = stamper.GetUnderContent(1);
-            /*
-            PdfDocument pdfDoc = new PdfDocument(new PdfReader(oldFile), new PdfWriter(newFile));
-            Console.WriteLine("abrio el archivo");
-            PdfCanvas canvas = new PdfCanvas(pdfDoc.GetFirstPage());
-            iText.Kernel.Geom.Rectangle mediabox = pdfDoc.GetPage(1).GetMediaBox();
-            double anchoPDF = mediabox.GetWidth();
-            double altoPDF = mediabox.GetHeight();
-            //MessageBox.Show("Medidas PDF ancho: "+ anchoPDF + " y alto: "+ altoPDF);
-            //Sincronizar rectangulos
-            float incremento = 130;
-           
-            //Para cada rectangulo y cuadrado obtenido
-            foreach (var item in rect)
-            {
-                float porcentaje = (item.Y * 100 / 640);
-                double nuevoPtoY = (porcentaje * (841)) / 100;
-                double proporcion = nuevoPtoY / item.Y;
-                if (porcentaje < 50)
-                {
-                    incremento = 0;
-                }
-                else if (porcentaje > 50 && porcentaje < 80)
-                {
-                    incremento = 70;
-                }
-                else
-                {
-                    incremento = 100;
-                }
-
-                //El x estaba con -50
-                canvas.SetStrokeColor(new DeviceRgb(0, 0, 255))
-                        .SetLineWidth(2)
-                        .Rectangle(item.X - 80, (841 * 0.9) - (nuevoPtoY * proporcion), item.Width * 1.3, item.Height * proporcion)
-                        .Stroke();
-            }
-
-
-
-            //Sincronizar elipses y circulos
-            foreach (var ellipse in ellipseList)
-            {
-                System.Drawing.Rectangle rr = ellipse.RotatedRect.MinAreaRect();
-                double porcentajeB = (rr.Bottom * 100 / 640);
-                double nuevoPtoB = (porcentajeB * (841)) / 100;
-                double proporcionB = nuevoPtoB / rr.Bottom;
-
-                double porcentajeT = (rr.Top * 100 / 640);
-                double nuevoPtoT = (porcentajeT * (841)) / 100;
-                double proporcionT = nuevoPtoB / rr.Top;
-
-                canvas.SetStrokeColor(new DeviceRgb(255, 0, 255))
-                    .Ellipse(rr.Left - 80, (841 * 0.9) - (nuevoPtoB), (rr.Right * 1.1) - 80, (841 * 0.9) - (nuevoPtoT))
-                    .Stroke();
-            }
-
-
-            pdfDoc.Close();
-            
-            File.Replace(@newFile, oldFile, @"backup.pdf.bac");
-            */
             PdfReader reader = new PdfReader(oldFile);
-
+            var pageSize = reader.GetPageSize(1);
+            Console.WriteLine("Tamano de pagina PDF " + pageSize);
             PdfStamper stamper = new PdfStamper(reader, new FileStream(newFile, FileMode.Append));
 
 
             PdfContentByte contentunder = stamper.GetUnderContent(1);
+
             //int rot;
             //rot = reader.GetPageRotation(1);
             //PdfDictionary pageDict;
@@ -465,7 +319,19 @@ namespace ConsistencyLibraryFiguresPD
 
 
                 contentunder.SetColorStroke(BaseColor.YELLOW);
-                contentunder.Rectangle(item.X - 80, (841 * 0.9) - (nuevoPtoY * proporcion), item.Width * 1.3, item.Height * proporcion);
+                ////Antigua coordenada contentunder.Rectangle(item.X - 50, (841 * 0.85) - (nuevoPtoY * proporcion)+incremento, item.Width * 1.3, item.Height * proporcion);
+                ////nueva coordenada
+                double propX = ((item.X * 100) / 640);
+                double ptoX2 = ((propX * 792) / 100);
+                double propY = ((item.Y * 100) / 480);
+                double ptoY2 = ((propY * 612) / 100);
+                double propArea = 1.58;
+                double propW = ((item.Width) * 100) / 640;
+                double ptoW2 = ((propW * 792) / 100);
+                double propH = ((item.Height * 100) / 480);
+                double ptoH2 = ((propH * 612) / 100);
+                contentunder.Rectangle(ptoX2 + 30, (612 - ptoY2 - (ptoH2 - 30)), ptoW2 - 30, ptoH2 - 30);
+
                 //contentunder.Rectangle(puntoX, puntoY, tamanoW, tamanoH);
                 contentunder.Stroke();
 
@@ -474,17 +340,26 @@ namespace ConsistencyLibraryFiguresPD
             //Sincronizar circulos
             foreach (var circle in circleList)
             {
-                double x = circle.Center.X;
+                /*double x = circle.Center.X;
                 double y = circle.Center.Y;
                 double r = circle.Radius;
                 double porcentaje = (y * 100 / 640);
-                double nuevoPtoY = (porcentaje * (841 * 0.9)) / 100;
+                double nuevoPtoY = (porcentaje * (841*0.9)) / 100;
                 double proporcion = nuevoPtoY / y;
+
+              // Setting color to the circle
+              contentunder.SetColorStroke(BaseColor.MAGENTA);
+              // creating a circle
+              contentunder.Circle(x, (841*0.9)-(nuevoPtoY), r*proporcion);*/
+                double propX = ((circle.Center.X * 100) / 640);
+                double ptoX2 = ((propX * 792) / 100);
+                double propY = ((circle.Center.Y * 100) / 480);
+                double ptoY2 = ((propY * 612) / 100);
+                double r = circle.Radius;
                 // Setting color to the circle
                 contentunder.SetColorStroke(BaseColor.MAGENTA);
                 // creating a circle
-                contentunder.Circle(x - 50, (841 * 0.9) - (nuevoPtoY), r * proporcion);
-
+                contentunder.Circle(ptoX2, 612 - ptoY2 - r, r * 1.58);
                 // Filling the circ
                 //canvas.Fill();
                 contentunder.Stroke();
@@ -495,7 +370,21 @@ namespace ConsistencyLibraryFiguresPD
             foreach (var ellipse in ellipseList)
             {
                 System.Drawing.Rectangle rr = ellipse.RotatedRect.MinAreaRect();
-                double porcentajeB = (rr.Bottom * 100 / 640);
+                double propLeft = ((rr.Left * 100) / 640);
+                double ptoLeft2 = ((propLeft * 792) / 100);
+
+                double propRight = ((rr.Right * 100) / 640);
+                double ptoRight2 = ((propRight * 792) / 100);
+
+                double propBottom = ((rr.Bottom * 100) / 480);
+                double ptoBottom2 = ((propBottom * 612) / 100);
+
+                double propTop = ((rr.Top * 100) / 480);
+                double ptoTop2 = ((propTop * 612) / 100);
+
+                contentunder.SetColorStroke(BaseColor.GREEN);
+                contentunder.Ellipse(ptoLeft2, 612 - ptoBottom2, ptoRight2, 612 - ptoTop2);
+                /*double porcentajeB = (rr.Bottom * 100 / 640);
                 double nuevoPtoB = (porcentajeB * (841)) / 100;
                 double proporcionB = nuevoPtoB / rr.Bottom;
 
@@ -503,8 +392,8 @@ namespace ConsistencyLibraryFiguresPD
                 double nuevoPtoT = (porcentajeT * (841)) / 100;
                 double proporcionT = nuevoPtoB / rr.Top;
 
-                contentunder.SetColorStroke(BaseColor.GREEN);
-                contentunder.Ellipse(rr.Left - 80, (841 * 0.9) - (nuevoPtoB), (rr.Right * 1.1) - 80, (841 * 0.9) - (nuevoPtoT));
+               contentunder.SetColorStroke(BaseColor.GREEN);
+               contentunder.Ellipse(rr.Left - 50, (841 * 0.9) - (nuevoPtoB), (rr.Right * 1.1) - 80, (841 * 0.9) - (nuevoPtoT));*/
                 contentunder.Stroke();
             }
 
@@ -512,6 +401,8 @@ namespace ConsistencyLibraryFiguresPD
             reader.Close();
 
             File.Replace(@newFile, oldFile, @"backup.pdf.bac");
+
+           
 
             Console.WriteLine("Finalizado");
             //File.Replace(@"temporal.pdf", @"ejemploOK.pdf", @"backup.pdf.bac");

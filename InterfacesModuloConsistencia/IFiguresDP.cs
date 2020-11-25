@@ -10,12 +10,19 @@ using Newtonsoft.Json.Linq;
 
 namespace InterfacesModuloConsistencia
 {
-    public interface IFiguras
+    public interface IFiguresDP
     {
-        JObject ObtenerFiguras(Mat imagen, string nombrePDF);
+        //Método principal que obtiene las figuras desde el doc digital
+        JObject ObtenerFiguras(string nombrePDF);
 
-        void GuardarFiguras(string nombrePDF);
+        //Método que retorna el nombre de la biblioteca 
         string GetName();
+        //Método que retorna la versión de la biblioteca 
         string GetVersion();
+
+      
     }
 }
+
+
+

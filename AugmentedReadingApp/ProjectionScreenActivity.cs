@@ -16,6 +16,9 @@ using ModuloConsistenciaDatos;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using Newtonsoft.Json.Linq;
+using System.Linq.Expressions;
+using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace AugmentedReadingApp
 {
@@ -50,13 +53,51 @@ namespace AugmentedReadingApp
         double numericUpDownResYText = 480;
         private PictureBox pictureBox6 = new PictureBox();
         private Font fnt = new Font("Arial", 10);
+       
+        //Variable que crea el picture box
+        FiguresDP FiguresDP;
+        VideoCapture _capture;
+        /*private async void ProcessFrame(object sender, EventArgs e)
+        {
+            if (_capture != null && _capture.Ptr != IntPtr.Zero)
+            {
+                
+                _capture.Retrieve(_frame,0);
+                pictureBox1.Image = _frame.Bitmap;
+                //double fps = 15;
+                //await Task.Delay(1000 / Convert.ToInt32(fps));
+                Console.WriteLine("Entro estooo");
+            }
+           
+        }*/
+
         public ProjectionScreenActivity(InteractionCoordinator incomingForm)
         {
             
             originalForm = incomingForm;
            
             InitializeComponent();
-            
+            /*if (_capture == null)
+            {
+                _capture = new VideoCapture(1);
+                //_capture.SetCaptureProperty(Emgu.CV.CvEnum.CapProp.Fps, 15);
+
+            }
+            _capture.ImageGrabbed += ProcessFrame;
+            _frame = new Mat();
+            if (_capture != null)
+            {
+                try
+                {
+                    _capture.Start();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+            }
+
+            */
             pictureBox3.Image = Image.FromFile("x_mark_red_circle.png");
             pictureBox4.Image = Image.FromFile("x_mark_red_circle.png");
             pictureBox5.Image = Image.FromFile("x_mark_red_circle.png");
@@ -118,7 +159,7 @@ namespace AugmentedReadingApp
             //Fin de la comprobación para interacción por voz//
 
             CefSettings cfsettings = new CefSettings();
-            
+
             cfsettings.UserAgent = "Mozilla/5.0 (Linux; Android 7.0; SM-G930V Build/NRD90M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.125 Mobile Safari/537.36";
             Cef.Initialize(cfsettings);
 
@@ -129,6 +170,7 @@ namespace AugmentedReadingApp
             panel_navegador.Controls.Add(navegador);
             navegador.Visible = false;
 
+            
         }
       
 
@@ -811,35 +853,66 @@ namespace AugmentedReadingApp
         //Sincronizar figuras desde físico a digital
         private void button4_Click(object sender, EventArgs e)
         {
+           
             string pdfName = originalForm.pdfName;
             numeroCamara = originalForm.numeroCamara;
            
             Console.WriteLine("Entro en figuras desde fisico " + numeroCamara);
+            // Inicia el contador de tiempo figuras DP:
+            DateTime timeImagen1 = DateTime.Now;
             captureCons = new VideoCapture(numeroCamara);
             
+            // Para el contador e imprime el resultado:
+            DateTime timeImagen2 = DateTime.Now;
+            TimeSpan timeImagen = new TimeSpan(timeImagen2.Ticks - timeImagen1.Ticks);
+            Console.WriteLine("TIEMPO en obtener la imagen: " + timeImagen.ToString());
+
             
-           // captureText = new VideoCapture(CameraNumber);
-            //captureCons.SetCaptureProperty(Emgu.CV.CvEnum.CapProp.FrameWidth, numericUpDownResXText);
-            //captureCons.SetCaptureProperty(Emgu.CV.CvEnum.CapProp.FrameHeight, numericUpDownResYText);
+
+           
             Mat imagen = new Mat();
             captureCons.Read(imagen);
-            
-            pictureBox1.Image = imagen.Bitmap;
-          
+
+            //pictureBox1.Image = imagen.Bitmap;
+            // Inicia el contador de tiempo figuras DP:
+            DateTime timeFiguresPD1 = DateTime.Now;
             ConsistenciaFigurasFD buscarFiguras = new ConsistenciaFigurasFD();
             List<string> figurasEncontradas = new List<string>();
-            JObject resultado;
+            //JObject resultado;
+            
             if (pdfName != null)
             {
-                resultado = buscarFiguras.buscarFiguras(imagen, originalForm.pdfName);
-                Console.WriteLine(resultado);
-                Console.WriteLine(string.Concat("Hi ", resultado["figuras"]["rectangulos"]));
-                int k = 0;
-                foreach (var item in resultado["figuras"]["rectangulos"])
+               
+                int resultado = buscarFiguras.buscarFiguras(imagen, originalForm.pdfName);
+                // Para el contador e imprime el resultado:
+                DateTime timeFiguresPD2 = DateTime.Now;
+                Console.WriteLine("este es el resultado de Sinc Figuras: "+resultado);
+                if (resultado == 1)
+                {
+                    
+                    TimeSpan timeFiguresPD = new TimeSpan(timeFiguresPD2.Ticks - timeFiguresPD1.Ticks);
+                    Console.WriteLine("TIEMPO Figures PD: " + timeFiguresPD.ToString());
+                    /*ESCRIBIR EN ARCHIVO*/
+                    //Pass the filepath and filename to the StreamWriter Constructor
+                    StreamWriter sw = new StreamWriter("C:\\Users\\Denisse\\Desktop\\EDDIE-Augmented-Reading-master\\AugmentedReadingApp\\bin\\x86\\Debug\\TiempoFigurasFisico.txt", true);
+                    //Write a line of text
+                    sw.WriteLine("Obtener imagen;" + timeImagen.ToString()); 
+                    sw.WriteLine("FiguresPD;" + timeFiguresPD.ToString());
+                    sw.Close();
+
+                    MessageBox.Show("Figuras sincronizadas");
+                }
+                else
+                {
+                    MessageBox.Show("No se encontraron figuras");
+                }
+                //Console.WriteLine(string.Concat("Hi ", resultado["figuras"]["rectangulos"]));
+                //int k = 0;
+                /*foreach (var item in resultado["figuras"]["rectangulos"])
                 {
                     Console.WriteLine("item en rect "+ item["rect"+k]);
                     k = k + 1;
-                }
+                }*/
             }
             else
             {
@@ -889,43 +962,98 @@ namespace AugmentedReadingApp
             JObject resultado;
             if (pdfName != null)
             {
-                resultado = buscarDP.SincronizarFiguras(imagen, originalForm.pdfName);
-               // Console.WriteLine(resultado);
-                //Console.WriteLine(string.Concat("Hi ", resultado["figuras"]["rectangulos"]));
+
+             
+                // Inicia el contador:
+                Stopwatch tiempo = Stopwatch.StartNew();
+                // Inicia el contador de tiempo figuras DP:
+                DateTime timeFiguresDP1 = DateTime.Now;
+                resultado = buscarDP.SincronizarFiguras( originalForm.pdfName);
+                // Para el contador e imprime el resultado:
+                Console.WriteLine("TIEMPO 2: " +tiempo.ElapsedMilliseconds.ToString());
+                // Para el contador e imprime el resultado:
+                DateTime timeFiguresDP2 = DateTime.Now;
+                TimeSpan timeFiguresDP = new TimeSpan(timeFiguresDP2.Ticks - timeFiguresDP1.Ticks);
+                Console.WriteLine("TIEMPO Figures DP: " + timeFiguresDP.ToString());
+                //TimesFromFiguresDP.Add(timeFiguresDP.ToString());
+                
+                /*ESCRIBIR EN ARCHIVO*/
+                //Pass the filepath and filename to the StreamWriter Constructor
+                StreamWriter sw = new StreamWriter("C:\\Users\\Denisse\\Desktop\\EDDIE-Augmented-Reading-master\\AugmentedReadingApp\\bin\\x86\\Debug\\TiempoDigital.txt",true);
+                //Write a line of text
+                sw.WriteLine("FiguresDP;"+timeFiguresDP.ToString());
+                
+
+
+
                 int k = 0;
-                //foreach (var item in resultado["figuras"]["rectangulos"])
-                //{
-                //Console.WriteLine("item en rect "+ item["rect"+k]);
-                //k = k + 1;
-                //}
-                FiguresDP FiguresDP = new FiguresDP(resultado)
+                
+                
+                FiguresDP = new FiguresDP(resultado)
                 {
                     Name = "FiguresDP",
                     BackColor = Color.FromArgb(255, 255, 255),
                     Location = new Point(285, 65),
                 };
 
-
+                
                 this.Controls.Add(FiguresDP);
                 FiguresDP.BringToFront();
-                List<List<string>>marker = getMarkerDP.GetPageMarker(originalForm.pdfName);
+
+                // Inicia el contador de tiempo Marker DP:
+                DateTime timeMarkerDP1 = DateTime.Now;
+                List<string>marker = getMarkerDP.GetPageMarker(originalForm.pdfName);
+                // Para el contador e imprime el resultado:
+                DateTime timeMarkerDP2 = DateTime.Now;
+                TimeSpan timeMarkerDP = new TimeSpan(timeMarkerDP2.Ticks - timeMarkerDP1.Ticks);
+                Console.WriteLine("TIEMPO MARKER DP: " + timeMarkerDP.ToString());
+                //TimesFromMarkerDP.Add(timeMarkerDP.ToString());
+                /*ESCRIBIR EN ARCHIVO*/
+                //Write a line of text
+                sw.WriteLine("MarkerDP;" + timeMarkerDP.ToString());
+               
+                // Inicia el contador de tiempo Marker DP:
+                DateTime timeCommentsDP1 = DateTime.Now;
                 List<List<string>> comments = getCommentsDP.GetComments(originalForm.pdfName);
+                // Para el contador e imprime el resultado:
+                DateTime timeCommentsDP2 = DateTime.Now;
+                TimeSpan timeCommentsDP = new TimeSpan(timeCommentsDP2.Ticks - timeCommentsDP1.Ticks);
+                Console.WriteLine("TIEMPO Comments DP: " + timeCommentsDP.ToString());
+                //TimesFromCommentsDP.Add(timeCommentsDP.ToString());
+                /*ESCRIBIR EN ARCHIVO*/
+                //Write a line of text
+                sw.WriteLine("CommentsDP;" + timeCommentsDP.ToString());
+                //Close the file
+                sw.Close();
+
                 foreach (var item in marker)
                 {
                   
                     Console.WriteLine("Marcadores  " + item.ToString());
-                    listBox1.Items.Add(item[0]+item[1]);
+                    listBox1.Items.Add(item);
                 }
                 foreach (var item in comments)
                 {
 
                     Console.WriteLine("Comentarios  " + item.ToString());
-                    listBox2.Items.Add(item[0] + item[1]);
+                    listBox2.Items.Add(item[0]+" Pag."+item[1]);
                 }
             }
             else
             {
                 MessageBox.Show("No se ha ingresado archivo PDF");
+            }
+
+            if (listBox1.Items.Count > 0)
+            {
+               
+                button8.Enabled = true;
+
+            }
+            if (listBox2.Items.Count > 0)
+            {
+                button9.Enabled = true;
+
             }
         }
 
@@ -942,15 +1070,30 @@ namespace AugmentedReadingApp
 
             if (pdfName != null)
             {
-
+                // Inicia el contador de tiempo Marker PD:
+                DateTime timeMarkerPD1 = DateTime.Now;
                 int markerRes = getMarkerPD.GetPageMarker(imagen, originalForm.pdfName);
+                // Para el contador e imprime el resultado:
+                DateTime timeMarkerPD2 = DateTime.Now;
+                
+
                 if (markerRes == 0)
                 {
+                    
                     MessageBox.Show("No se encontró marcador");
+
                 }
                 else if (markerRes == 10)
                 {
                     MessageBox.Show("Se sincronizó correctamente");
+                    TimeSpan timeMarkerPD = new TimeSpan(timeMarkerPD2.Ticks - timeMarkerPD1.Ticks);
+                    Console.WriteLine("TIEMPO MARKER PD: " + timeMarkerPD.ToString());
+                    //TimesFromMarkerDP.Add(timeMarkerDP.ToString());
+                    /*ESCRIBIR EN ARCHIVO*/
+                    StreamWriter sw = new StreamWriter("C:\\Users\\Denisse\\Desktop\\EDDIE-Augmented-Reading-master\\AugmentedReadingApp\\bin\\x86\\Debug\\TiempoMarcadorFisico.txt", true);
+                    //Write a line of text
+                    sw.WriteLine("MarkerPD;" + timeMarkerPD.ToString());
+                    sw.Close();
                 }
             }
             else
@@ -968,8 +1111,13 @@ namespace AugmentedReadingApp
             
             ConsistencyCommentsPD getCommentsPD = new ConsistencyCommentsPD();
             Console.WriteLine("Entro en comentarios PD " + numeroCamara);
+            // Inicia el contador de tiempo figuras DP:
+            DateTime timeImagen1 = DateTime.Now;
             captureCons = new VideoCapture(numeroCamara);
-
+            // Para el contador e imprime el resultado:
+            DateTime timeImagen2 = DateTime.Now;
+            TimeSpan timeImagen = new TimeSpan(timeImagen2.Ticks - timeImagen1.Ticks);
+            Console.WriteLine("TIEMPO en obtener la imagen comentario: " + timeImagen.ToString());
 
             // captureText = new VideoCapture(CameraNumber);
             //captureCons.SetCaptureProperty(Emgu.CV.CvEnum.CapProp.FrameWidth, numericUpDownResXText);
@@ -982,8 +1130,21 @@ namespace AugmentedReadingApp
             
             if (pdfName != null)
             {
+                // Inicia el contador de tiempo figuras DP:
+                DateTime timeCommentsPD1 = DateTime.Now;
                 List<List<string>> comments = getCommentsPD.GetComments(originalForm.pdfName, imagen);
-                
+                // Para el contador e imprime el resultado:
+                DateTime timeCommentsPD2 = DateTime.Now;
+                TimeSpan timeCommentsPD = new TimeSpan(timeCommentsPD2.Ticks - timeCommentsPD1.Ticks);
+                Console.WriteLine("TIEMPO Comments PD: " + timeCommentsPD.ToString());
+                /*ESCRIBIR EN ARCHIVO*/
+                //Pass the filepath and filename to the StreamWriter Constructor
+                StreamWriter sw = new StreamWriter("C:\\Users\\Denisse\\Desktop\\EDDIE-Augmented-Reading-master\\AugmentedReadingApp\\bin\\x86\\Debug\\TiempoComentariosFisico.txt", true);
+                //Write a line of text
+                sw.WriteLine("CommentsPD;" + timeCommentsPD.ToString());
+                sw.Close();
+
+
                 foreach (var item in comments)
                 {
                     foreach (var item2 in item)
@@ -1007,6 +1168,70 @@ namespace AugmentedReadingApp
                 MessageBox.Show("No se ha ingresado archivo PDF");
             }
         }
+
+        private void button8_Click(object sender, EventArgs e)
+        {
+            string pdfName = originalForm.pdfName;
+            //string curItem = listBox1.SelectedItem.ToString();
+            if (listBox1.SelectedIndex > -1) {
+                string curItem = listBox1.SelectedItem.ToString();
+                MessageBox.Show("Item "+ curItem);
+                PageMarkerDP deleteMarkerDP = new PageMarkerDP();
+                int res = deleteMarkerDP.DeleteMarker(curItem, pdfName);
+                if (res == 1)
+                {
+                    MessageBox.Show("Marcador eliminado");
+                    listBox1.Items.Remove(curItem);
+                }
+                else
+                {
+                    MessageBox.Show("No se pudo completar la operación");
+                }
+            }
+            else
+            {
+                MessageBox.Show("No esta seleccionado");
+            }
+            
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            //MessageBox.Show("Cambio");
+            if (FiguresDP.Visible==true)
+            {
+                FiguresDP.Visible = false;
+                Color redColor = Color.FromArgb(255, 0, 0);
+                checkBox1.ForeColor = redColor;
+            }
+            else
+            {
+                FiguresDP.Visible = true;
+                Color greenColor = Color.FromArgb(0, 192, 0);
+                checkBox1.ForeColor = greenColor;
+
+            }
+            
+        }
+
+        private void button9_Click(object sender, EventArgs e)
+        {
+            //string curItem = listBox2.SelectedItem.ToString();
+            if (listBox2.SelectedIndex > -1)
+            {
+                string curItem = listBox2.SelectedItem.ToString();
+                
+                //string text = listBox2.GetItemText(listBox2.SelectedItem);
+                MessageBox.Show("Comentario "+ curItem+" eliminado");
+            }
+            else
+            {
+                MessageBox.Show("No esta seleccionado");
+            }
+
+        }
+
+        
     }
 }
 
