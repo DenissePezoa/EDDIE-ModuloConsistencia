@@ -11,6 +11,7 @@ using System.Reflection;
 using System.IO;
 using ModuloReconocimientoGestual;
 using ModuloConsistenciaDatos;
+using System.Threading.Tasks;
 //using Leap;
 
 
@@ -26,6 +27,9 @@ namespace AugmentedReadingApp
         public int numeroCamara;
         public string pdfName;
         VideoCapture captureText;
+        //VideoCapture captureDoc;
+        public VideoCapture _capture;
+        public Mat _frame;
         VideoCapture captureGesture;
         Dictionary<string, IPlugin> _plugins = new Dictionary<string, IPlugin>();
 
@@ -205,6 +209,44 @@ namespace AugmentedReadingApp
             return SelectedItem.Key;
         }
 
+        private async void ProcessFrame(object sender, EventArgs e)
+        {
+            if (_capture != null && _capture.Ptr != IntPtr.Zero)
+            {
+                _capture.Retrieve(_frame, 0);
+                if (_frame != null) {
+                    Image<Bgr, byte> imagen_aux = _frame.ToImage<Bgr, byte>();
+                    //imagen_aux = imagen_aux.Rotate(180, new Bgr(0, 0, 0));
+                    imageBox3.Image = imagen_aux;
+                    //pictureBox1.Image = _frame.Bitmap;
+                    double fps = 15;
+                    await Task.Delay(1000 / Convert.ToInt32(fps));
+                }
+                
+
+            }
+        }
+
+        public void consistencyCamera(int CameraNumber)
+        {
+            _capture = new VideoCapture(CameraNumber);
+
+
+            _capture.ImageGrabbed += ProcessFrame;
+            _frame = new Mat();
+            if (_capture != null)
+            {
+                try
+                {
+                    _capture.Start();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+
+                }
+            }
+        }
         private void ProyectionActivityBt(object sender, EventArgs e)
         {
             var CameraNumber = _CameraTextIndex;
@@ -219,7 +261,11 @@ namespace AugmentedReadingApp
 
                 imageBox1.Image = recTxt.Recognition(captureText);
                 captureText.Stop();
+
             }
+            consistencyCamera(CameraNumber);
+
+
             numeroCamara = CameraNumber;
 
         }

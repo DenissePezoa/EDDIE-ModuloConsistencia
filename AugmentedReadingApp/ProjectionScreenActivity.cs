@@ -48,7 +48,7 @@ namespace AugmentedReadingApp
         CameraActivity cameraCons = new CameraActivity();
         public int numeroCamara;
         VideoCapture captureCons;
-        Mat _frame;
+        //Mat _frame;
         double numericUpDownResXText = 640;
         double numericUpDownResYText = 480;
         private PictureBox pictureBox6 = new PictureBox();
@@ -856,22 +856,29 @@ namespace AugmentedReadingApp
            
             string pdfName = originalForm.pdfName;
             numeroCamara = originalForm.numeroCamara;
-           
+            VideoCapture auxCapture = originalForm._capture;
+            Mat captureImage = new Mat();
+            
+            auxCapture.Read(captureImage);
+            Image<Bgr, byte> imagen_aux = captureImage.ToImage<Bgr, byte>();
+            pictureBox1.Image = imagen_aux.Bitmap;
+            imageBox1.Image = imagen_aux;
+            
             Console.WriteLine("Entro en figuras desde fisico " + numeroCamara);
             // Inicia el contador de tiempo figuras DP:
-            DateTime timeImagen1 = DateTime.Now;
-            captureCons = new VideoCapture(numeroCamara);
+            //DateTime timeImagen1 = DateTime.Now;
+            //captureCons = new VideoCapture(numeroCamara);
             
             // Para el contador e imprime el resultado:
-            DateTime timeImagen2 = DateTime.Now;
-            TimeSpan timeImagen = new TimeSpan(timeImagen2.Ticks - timeImagen1.Ticks);
-            Console.WriteLine("TIEMPO en obtener la imagen: " + timeImagen.ToString());
+            ///DateTime timeImagen2 = DateTime.Now;
+            ///TimeSpan timeImagen = new TimeSpan(timeImagen2.Ticks - timeImagen1.Ticks);
+            //Console.WriteLine("TIEMPO en obtener la imagen: " + timeImagen.ToString());
 
-            
 
-           
-            Mat imagen = new Mat();
-            captureCons.Read(imagen);
+
+
+            ///Mat imagen = new Mat();
+            ///captureCons.Read(imagen);
 
             //pictureBox1.Image = imagen.Bitmap;
             // Inicia el contador de tiempo figuras DP:
@@ -883,7 +890,7 @@ namespace AugmentedReadingApp
             if (pdfName != null)
             {
                
-                int resultado = buscarFiguras.buscarFiguras(imagen, originalForm.pdfName);
+                int resultado = buscarFiguras.buscarFiguras(captureImage, originalForm.pdfName);
                 // Para el contador e imprime el resultado:
                 DateTime timeFiguresPD2 = DateTime.Now;
                 Console.WriteLine("este es el resultado de Sinc Figuras: "+resultado);
@@ -896,9 +903,9 @@ namespace AugmentedReadingApp
                     //Pass the filepath and filename to the StreamWriter Constructor
                     StreamWriter sw = new StreamWriter("C:\\Users\\Denisse\\Desktop\\EDDIE-Augmented-Reading-master\\AugmentedReadingApp\\bin\\x86\\Debug\\TiempoFigurasFisico.txt", true);
                     //Write a line of text
-                    sw.WriteLine("Obtener imagen;" + timeImagen.ToString()); 
-                    sw.WriteLine("FiguresPD;" + timeFiguresPD.ToString());
-                    sw.Close();
+                   /// sw.WriteLine("Obtener imagen;" + timeImagen.ToString()); 
+                    ///sw.WriteLine("FiguresPD;" + timeFiguresPD.ToString());
+                    ///sw.Close();
 
                     MessageBox.Show("Figuras sincronizadas");
                 }
@@ -918,22 +925,23 @@ namespace AugmentedReadingApp
             {
                 MessageBox.Show("No se ha ingresado archivo PDF");
             }
-            
-           
-            
+
+            /////originalForm.consistencyCamera(numeroCamara);
             
 
-           /* Esto me sirve para la otra funcion
-            *FiguresPtoD Figures = new FiguresPtoD(resultado)
-            {
-                Name = "FiguresPtoD",
-                BackColor = Color.FromArgb(255, 255, 255),
-                Location = new Point(285, 65),
-            };
-           
-          
-            this.Controls.Add(Figures);
-            Figures.BringToFront();*/
+
+
+            /* Esto me sirve para la otra funcion
+             *FiguresPtoD Figures = new FiguresPtoD(resultado)
+             {
+                 Name = "FiguresPtoD",
+                 BackColor = Color.FromArgb(255, 255, 255),
+                 Location = new Point(285, 65),
+             };
+
+
+             this.Controls.Add(Figures);
+             Figures.BringToFront();*/
             //pictureBox6.Dock = DockStyle.None;
             //pictureBox6.BackColor = Color.White;
             // Connect the Paint event of the PictureBox to the event handler method.
@@ -1062,17 +1070,24 @@ namespace AugmentedReadingApp
         {
             string pdfName = originalForm.pdfName;
             numeroCamara = originalForm.numeroCamara;
+            
+            VideoCapture auxCapture = originalForm._capture;
+            Mat captureImage = new Mat();
+            auxCapture.Read(captureImage);
+            Image<Bgr, byte> imagen_aux = captureImage.ToImage<Bgr, byte>();
+            pictureBox1.Image = imagen_aux.Bitmap;
+            imageBox1.Image = imagen_aux;
 
             PageMarkerPD getMarkerPD = new PageMarkerPD();
-            captureCons = new VideoCapture(numeroCamara);
-            Mat imagen = new Mat();
-            captureCons.Read(imagen);
+            ///captureCons = new VideoCapture(numeroCamara);
+            ///Mat imagen = new Mat();
+            ///captureCons.Read(imagen);
 
             if (pdfName != null)
             {
                 // Inicia el contador de tiempo Marker PD:
                 DateTime timeMarkerPD1 = DateTime.Now;
-                int markerRes = getMarkerPD.GetPageMarker(imagen, originalForm.pdfName);
+                int markerRes = getMarkerPD.GetPageMarker(captureImage, originalForm.pdfName);
                 // Para el contador e imprime el resultado:
                 DateTime timeMarkerPD2 = DateTime.Now;
                 
@@ -1108,22 +1123,28 @@ namespace AugmentedReadingApp
         {
             string pdfName = originalForm.pdfName;
             numeroCamara = originalForm.numeroCamara;
-            
+
+            VideoCapture auxCapture = originalForm._capture;
+            Mat captureImage = new Mat();
+            auxCapture.Read(captureImage);
+            Image<Bgr, byte> imagen_aux = captureImage.ToImage<Bgr, byte>();
+            pictureBox1.Image = imagen_aux.Bitmap;
+            imageBox1.Image = imagen_aux;
+
             ConsistencyCommentsPD getCommentsPD = new ConsistencyCommentsPD();
             Console.WriteLine("Entro en comentarios PD " + numeroCamara);
-            // Inicia el contador de tiempo figuras DP:
-            DateTime timeImagen1 = DateTime.Now;
-            captureCons = new VideoCapture(numeroCamara);
-            // Para el contador e imprime el resultado:
-            DateTime timeImagen2 = DateTime.Now;
-            TimeSpan timeImagen = new TimeSpan(timeImagen2.Ticks - timeImagen1.Ticks);
-            Console.WriteLine("TIEMPO en obtener la imagen comentario: " + timeImagen.ToString());
+           
+
+            ///captureCons = new VideoCapture(numeroCamara);
+            
+            
 
             // captureText = new VideoCapture(CameraNumber);
             //captureCons.SetCaptureProperty(Emgu.CV.CvEnum.CapProp.FrameWidth, numericUpDownResXText);
             //captureCons.SetCaptureProperty(Emgu.CV.CvEnum.CapProp.FrameHeight, numericUpDownResYText);
-            Mat imagen = new Mat();
-            captureCons.Read(imagen);
+            
+            ///Mat imagen = new Mat();
+            ///captureCons.Read(imagen);
 
             //pictureBox1.Image = imagen.Bitmap;
             
@@ -1132,7 +1153,7 @@ namespace AugmentedReadingApp
             {
                 // Inicia el contador de tiempo figuras DP:
                 DateTime timeCommentsPD1 = DateTime.Now;
-                List<List<string>> comments = getCommentsPD.GetComments(originalForm.pdfName, imagen);
+                List<List<string>> comments = getCommentsPD.GetComments(originalForm.pdfName, captureImage);
                 // Para el contador e imprime el resultado:
                 DateTime timeCommentsPD2 = DateTime.Now;
                 TimeSpan timeCommentsPD = new TimeSpan(timeCommentsPD2.Ticks - timeCommentsPD1.Ticks);
